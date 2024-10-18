@@ -1,8 +1,5 @@
-# Question3
-# Used fft_example as the basis so some things don't get used but i think will be used in later questions
 import numpy as np
 from scipy.fft import fft
-import math
 import matplotlib.pyplot as plt
 
 def cart2pol(x, y):
@@ -21,9 +18,11 @@ def main():
     # Load f.npy
     f_signal = np.load('f.npy').flatten()
     
-    fs = 1024  # Sampling frequency
-    T = 1 / fs  # Sampling period
+    # Variables
+    fs = 1024  
+    T = 1 / fs  
     N = len(f_signal)  # N samples
+    T0 = N * T  # Total time
     t = np.arange(N) * T  
     
     # a) 50Hz power line interference 
@@ -31,14 +30,39 @@ def main():
     
     # Plot
     plt.figure()
-    plt.plot(t, f_signal, label="Original Signal", color='blue', linewidth=0.75)
     plt.plot(t, corrupted_signal, label="Corrupted Signal", color='red', linestyle='dashed', linewidth=0.75)
+    plt.plot(t, f_signal, label="Original Signal", color='blue', linewidth=0.75)
     plt.xlabel('Time [s]')
     plt.ylabel('Amplitude [a.u.]')
     plt.legend()
     plt.xlim(t[0], t[-1])
     plt.grid(True)
     plt.show()
+
+    # Perform FFT on both signals
+    fft_original = fft(f_signal)
+    fft_corrupted = fft(corrupted_signal)
+
+    # Compute magnitude and phase for both signals
+    [Fm_orig] = cart2pol(fft_original.real, fft_original.imag)
+    [Fm_corr] = cart2pol(fft_corrupted.real, fft_corrupted.imag)
+
+    # Frequency axis
+    k = np.arange(0, N, step=1)
+    f_axis = k / T0  # Frequency
+    half_f_axis = f_axis[:N//2]  # Only positive frequencies
+
+    # c) Plot the magnitude of the DFTs for comparison
+    plt.figure()
+    plt.plot(half_f_axis, Fm_corr[:N//2], label="Corrupted Signal", color='red', linestyle='dashed', linewidth=0.75)
+    plt.plot(half_f_axis, Fm_orig[:N//2], label="Original Signal", color='blue', linewidth=0.75)
+    plt.xlabel('Frequency [Hz]')
+    plt.ylabel('Magnitude / Phase [A.U.]')
+    plt.xlim(0, 512)  
+    plt.legend()
+    plt.grid(True)
+    plt.show()
+
 
 
    
